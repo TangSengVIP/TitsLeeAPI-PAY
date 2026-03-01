@@ -6,7 +6,7 @@ import { verifySign } from '@/lib/easy-pay/sign';
 import { refund as easyPayRefund } from '@/lib/easy-pay/client';
 import { getUser, createAndRedeem, subtractBalance } from '@/lib/sub2api/client';
 import { Prisma } from '@prisma/client';
-import type { ZPayNotifyParams } from '@/lib/easy-pay/types';
+import type { EasyPayNotifyParams } from '@/lib/easy-pay/types';
 import { deriveOrderState, isRefundStatus } from './status';
 
 const MAX_PENDING_ORDERS = 3;
