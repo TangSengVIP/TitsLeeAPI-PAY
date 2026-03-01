@@ -440,17 +440,31 @@ function PayContent() {
             </p>
           </div>
           {!isMobile && (
-            <a
-              href={ordersUrl}
-              className={[
-                'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
-                isDark
-                  ? 'border-slate-600 text-slate-200 hover:bg-slate-800'
-                  : 'border-slate-300 text-slate-700 hover:bg-slate-100',
-              ].join(' ')}
-            >
-              {'\u6211\u7684\u8BA2\u5355'}
-            </a>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={loadUserAndOrders}
+                className={[
+                  'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                  isDark
+                    ? 'border-slate-600 text-slate-200 hover:bg-slate-800'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-100',
+                ].join(' ')}
+              >
+                刷新
+              </button>
+              <a
+                href={ordersUrl}
+                className={[
+                  'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                  isDark
+                    ? 'border-slate-600 text-slate-200 hover:bg-slate-800'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-100',
+                ].join(' ')}
+              >
+                {'\u6211\u7684\u8BA2\u5355'}
+              </a>
+            </div>
           )}
         </div>
 
