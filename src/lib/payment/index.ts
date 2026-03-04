@@ -2,6 +2,7 @@ import { paymentRegistry } from './registry';
 import type { PaymentType } from './types';
 import { EasyPayProvider } from '@/lib/easy-pay/provider';
 import { StripeProvider } from '@/lib/stripe/provider';
+import { AlipayProvider } from '@/lib/alipay/provider';
 import { getEnv } from '@/lib/config';
 
 export { paymentRegistry } from './registry';
@@ -29,6 +30,13 @@ export function initPaymentProviders(): void {
       throw new Error('PAYMENT_PROVIDERS 含 easypay，但缺少 EASY_PAY_PID 或 EASY_PAY_PKEY');
     }
     paymentRegistry.register(new EasyPayProvider());
+  }
+
+  if (providers.includes('alipaydirect')) {
+    if (!env.ALIPAY_APP_ID || !env.ALIPAY_PRIVATE_KEY) {
+      throw new Error('PAYMENT_PROVIDERS 含 alipaydirect，但缺少 ALIPAY_APP_ID 或 ALIPAY_PRIVATE_KEY');
+    }
+    paymentRegistry.register(new AlipayProvider());
   }
 
   if (providers.includes('stripe')) {
