@@ -21,6 +21,8 @@ export interface CreatePaymentRequest {
   notifyUrl?: string;
   returnUrl?: string;
   clientIp?: string;
+  /** 是否来自移动端（影响支付宝选择 PC 页面支付 / H5 手机网站支付） */
+  isMobile?: boolean;
 }
 
 /** Response from creating a payment */

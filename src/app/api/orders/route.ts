@@ -10,6 +10,7 @@ const createOrderSchema = z.object({
   payment_type: z.string().min(1),
   src_host: z.string().max(253).optional(),
   src_url: z.string().max(2048).optional(),
+  is_mobile: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '参数错误', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { user_id, amount, payment_type, src_host, src_url } = parsed.data;
+    const { user_id, amount, payment_type, src_host, src_url, is_mobile } = parsed.data;
 
     // Validate amount range
     if (amount < env.MIN_RECHARGE_AMOUNT || amount > env.MAX_RECHARGE_AMOUNT) {
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
       clientIp,
       srcHost: src_host,
       srcUrl: src_url,
+      isMobile: is_mobile,
     });
 
     // 不向客户端暴露 userName / userBalance 等隐私字段

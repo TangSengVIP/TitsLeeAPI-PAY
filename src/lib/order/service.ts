@@ -19,6 +19,7 @@ export interface CreateOrderInput {
   clientIp: string;
   srcHost?: string;
   srcUrl?: string;
+  isMobile?: boolean;
 }
 
 export interface CreateOrderResult {
@@ -134,6 +135,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       paymentType: input.paymentType,
       subject: `${env.PRODUCT_NAME} ${payAmount.toFixed(2)} CNY`,
       clientIp: input.clientIp,
+      isMobile: input.isMobile,
     });
 
     await prisma.order.update({

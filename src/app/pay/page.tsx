@@ -255,6 +255,7 @@ function PayContent() {
           payment_type: paymentType,
           src_host: srcHost,
           src_url: srcUrl,
+          is_mobile: isMobile,
         }),
       });
 

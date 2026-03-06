@@ -27,18 +27,18 @@ function assertAlipayEnv(env: ReturnType<typeof getEnv>) {
 }
 
 /**
- * 生成电脑网站支付的跳转 URL（GET 方式）
- * 用于 alipay.trade.page.pay
+ * 生成支付宝网站/H5支付的跳转 URL（GET 方式）
+ * PC: alipay.trade.page.pay  H5: alipay.trade.wap.pay
  */
 export function pageExecute(
   bizContent: Record<string, unknown>,
-  options?: { notifyUrl?: string; returnUrl?: string },
+  options?: { notifyUrl?: string; returnUrl?: string; method?: string },
 ): string {
   const env = assertAlipayEnv(getEnv());
 
   const params: Record<string, string> = {
     ...getCommonParams(env.ALIPAY_APP_ID),
-    method: 'alipay.trade.page.pay',
+    method: options?.method || 'alipay.trade.page.pay',
     biz_content: JSON.stringify(bizContent),
   };
 

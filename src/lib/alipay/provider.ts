@@ -22,16 +22,20 @@ export class AlipayProvider implements PaymentProvider {
   };
 
   async createPayment(request: CreatePaymentRequest): Promise<CreatePaymentResponse> {
+    const method = request.isMobile ? 'alipay.trade.wap.pay' : 'alipay.trade.page.pay';
+    const productCode = request.isMobile ? 'QUICK_WAP_WAY' : 'FAST_INSTANT_TRADE_PAY';
+
     const url = pageExecute(
       {
         out_trade_no: request.orderId,
-        product_code: 'FAST_INSTANT_TRADE_PAY',
+        product_code: productCode,
         total_amount: request.amount.toFixed(2),
         subject: request.subject,
       },
       {
         notifyUrl: request.notifyUrl,
         returnUrl: request.returnUrl,
+        method,
       },
     );
 
