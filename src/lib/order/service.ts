@@ -132,8 +132,6 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       amount: payAmount,
       paymentType: input.paymentType,
       subject: `${env.PRODUCT_NAME} ${payAmount.toFixed(2)} CNY`,
-      notifyUrl: env.EASY_PAY_NOTIFY_URL || '',
-      returnUrl: env.EASY_PAY_RETURN_URL || '',
       clientIp: input.clientIp,
     });
 
