@@ -162,7 +162,7 @@ function AdminContent() {
       <div className={`flex min-h-screen items-center justify-center p-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
         <div className="text-center text-red-500">
           <p className="text-lg font-medium">{text.missingToken}</p>
-          <p className="mt-2 text-sm text-gray-500">{text.missingTokenHint}</p>
+          <p className={`mt-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{text.missingTokenHint}</p>
         </div>
       </div>
     );
@@ -335,7 +335,7 @@ function AdminPageFallback() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="text-gray-500">{locale === 'en' ? 'Loading...' : '加载中...'}</div>
+      <div className="text-slate-500">{locale === 'en' ? 'Loading...' : '加载中...'}</div>
     </div>
   );
 }

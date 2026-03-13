@@ -155,7 +155,7 @@ export default function SubscriptionPlanCard({ plan, onSubscribe, isDark, locale
       {isOpenAI && plan.defaultMappedModel && (
         <div className={[
           'mb-4 flex items-center justify-between rounded-lg border px-3 py-2 text-sm',
-          isDark ? 'border-green-500/20 bg-green-500/5' : 'border-green-500/20 bg-green-50/50',
+          isDark ? 'border-green-500/30 bg-green-500/10' : 'border-green-200 bg-green-50/50',
         ].join(' ')}>
           <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
             {pickLocaleText(locale, '默认模型', 'Default Model')}

@@ -596,7 +596,7 @@ function SubscriptionsContent() {
       <div className={`flex min-h-screen items-center justify-center p-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
         <div className="text-center text-red-500">
           <p className="text-lg font-medium">{t.missingToken}</p>
-          <p className="mt-2 text-sm text-gray-500">{t.missingTokenHint}</p>
+          <p className={`mt-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t.missingTokenHint}</p>
         </div>
       </div>
     );
@@ -920,7 +920,7 @@ function SubscriptionsContent() {
                           <>
                             <div>
                               <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>/v1/messages 调度</span>
-                              <div className={['mt-0.5 text-xs font-medium', plan.groupAllowMessagesDispatch ? 'text-green-600 dark:text-green-400' : isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
+                              <div className={['mt-0.5 text-xs font-medium', plan.groupAllowMessagesDispatch ? (isDark ? 'text-green-400' : 'text-green-600') : isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
                                 {plan.groupAllowMessagesDispatch ? '已启用' : '未启用'}
                               </div>
                             </div>
@@ -1241,7 +1241,7 @@ function SubscriptionsContent() {
                       {selectedGroup.platform?.toLowerCase() === 'openai' && (
                         <div>
                           <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>/v1/messages 调度</span>
-                          <div className={['mt-0.5 font-medium', selectedGroup.allow_messages_dispatch ? 'text-green-600 dark:text-green-400' : isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
+                          <div className={['mt-0.5 font-medium', selectedGroup.allow_messages_dispatch ? (isDark ? 'text-green-400' : 'text-green-600') : isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
                             {selectedGroup.allow_messages_dispatch ? '已启用' : '未启用'}
                           </div>
                         </div>
@@ -1431,7 +1431,7 @@ function SubscriptionsPageFallback() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="text-gray-500">{locale === 'en' ? 'Loading...' : '加载中...'}</div>
+      <div className="text-slate-500">{locale === 'en' ? 'Loading...' : '加载中...'}</div>
     </div>
   );
 }

@@ -81,12 +81,12 @@ export default function RefundDialog({
         <div className="mt-4 space-y-3">
           <div className={['rounded-lg p-3', dark ? 'bg-slate-800' : 'bg-gray-50'].join(' ')}>
             <div className={['text-sm', dark ? 'text-slate-400' : 'text-gray-500'].join(' ')}>{text.orderId}</div>
-            <div className="text-sm font-mono">{orderId}</div>
+            <div className={['text-sm font-mono', dark ? 'text-slate-200' : 'text-gray-900'].join(' ')}>{orderId}</div>
           </div>
 
           <div className={['rounded-lg p-3', dark ? 'bg-slate-800' : 'bg-gray-50'].join(' ')}>
             <div className={['text-sm', dark ? 'text-slate-400' : 'text-gray-500'].join(' ')}>{text.amount}</div>
-            <div className="text-lg font-bold text-red-600">
+            <div className={['text-lg font-bold', dark ? 'text-red-400' : 'text-red-600'].join(' ')}>
               {currency}
               {amount.toFixed(2)}
             </div>
@@ -127,7 +127,7 @@ export default function RefundDialog({
                 onChange={(e) => setForce(e.target.checked)}
                 className={['rounded', dark ? 'border-slate-600' : 'border-gray-300'].join(' ')}
               />
-              <span className="text-red-600">{text.forceRefund}</span>
+              <span className={dark ? 'text-red-400' : 'text-red-600'}>{text.forceRefund}</span>
             </label>
           )}
         </div>
@@ -147,7 +147,10 @@ export default function RefundDialog({
           <button
             onClick={handleConfirm}
             disabled={loading || (requireForce && !force)}
-            className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+            className={[
+              'flex-1 rounded-lg py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed',
+              dark ? 'bg-red-600/90 disabled:bg-slate-700 disabled:text-slate-500' : 'bg-red-600 disabled:bg-gray-300 disabled:text-gray-400',
+            ].join(' ')}
           >
             {loading ? text.processing : text.confirm}
           </button>

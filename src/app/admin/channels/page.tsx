@@ -328,7 +328,7 @@ function ChannelsContent() {
       <div className={`flex min-h-screen items-center justify-center p-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
         <div className="text-center text-red-500">
           <p className="text-lg font-medium">{t.missingToken}</p>
-          <p className="mt-2 text-sm text-gray-500">{t.missingTokenHint}</p>
+          <p className={`mt-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t.missingTokenHint}</p>
         </div>
       </div>
     );
@@ -721,13 +721,13 @@ function ChannelsContent() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       {channel.groupExists ? (
-                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+                        <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${isDark ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </span>
                       ) : (
-                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
+                        <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${isDark ? 'bg-red-900/40 text-red-400' : 'bg-red-100 text-red-600'}`}>
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -997,7 +997,7 @@ function ChannelsContent() {
                         disabled={alreadyImported}
                         checked={syncSelected.has(group.id)}
                         onChange={() => toggleSyncGroup(group.id)}
-                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500"
+                        className={`mt-0.5 h-4 w-4 rounded text-indigo-500 focus:ring-indigo-500 ${isDark ? 'border-slate-600 bg-slate-700' : 'border-slate-300'}`}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -1061,7 +1061,7 @@ function ChannelsPageFallback() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="text-gray-500">{locale === 'en' ? 'Loading...' : '加载中...'}</div>
+      <div className="text-slate-500">{locale === 'en' ? 'Loading...' : '加载中...'}</div>
     </div>
   );
 }

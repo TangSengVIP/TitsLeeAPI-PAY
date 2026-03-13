@@ -85,7 +85,7 @@ export default function OrderTable({ orders, onRetry, onCancel, onViewDetail, da
             <th className={thCls}>{text.actions}</th>
           </tr>
         </thead>
-        <tbody className={`divide-y ${dark ? 'divide-slate-700/60' : 'divide-gray-200 bg-white'}`}>
+        <tbody className={`divide-y ${dark ? 'divide-slate-700/60 bg-slate-900' : 'divide-gray-200 bg-white'}`}>
           {orders.map((order) => {
             const statusInfo = {
               label: formatStatus(order.status, locale),
@@ -128,12 +128,12 @@ export default function OrderTable({ orders, onRetry, onCancel, onViewDetail, da
                     {order.id.slice(0, 12)}...
                   </button>
                 </td>
-                <td className={`whitespace-nowrap px-4 py-3 text-sm ${dark ? 'text-slate-200' : ''}`}>
+                <td className={`whitespace-nowrap px-4 py-3 text-sm ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
                   {order.userName || `#${order.userId}`}
                 </td>
                 <td className={tdMuted}>{order.userEmail || '-'}</td>
                 <td className={tdMuted}>{order.userNotes || '-'}</td>
-                <td className={`whitespace-nowrap px-4 py-3 text-sm font-medium ${dark ? 'text-slate-200' : ''}`}>
+                <td className={`whitespace-nowrap px-4 py-3 text-sm font-medium ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
                   {currency}
                   {order.amount.toFixed(2)}
                 </td>

@@ -97,7 +97,12 @@ export default function UserSubscriptions({ subscriptions, onRenew, isDark, loca
                 <button
                   type="button"
                   onClick={() => onRenew(sub.group_id)}
-                  className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-600 active:bg-emerald-700"
+                  className={[
+                    'rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors',
+                    isDark
+                      ? 'bg-emerald-500/80 hover:bg-emerald-500 active:bg-emerald-600'
+                      : 'bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700',
+                  ].join(' ')}
                 >
                   {pickLocaleText(locale, '续费', 'Renew')}
                 </button>
@@ -107,13 +112,13 @@ export default function UserSubscriptions({ subscriptions, onRenew, isDark, loca
             {/* Dates */}
             <div className={['mb-3 grid grid-cols-2 gap-3 text-sm', isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
               <div>
-                <span className="text-xs uppercase tracking-wide">{pickLocaleText(locale, '开始', 'Start')}</span>
+                <span className={['text-xs uppercase tracking-wide', isDark ? 'text-slate-500' : 'text-slate-400'].join(' ')}>{pickLocaleText(locale, '开始', 'Start')}</span>
                 <p className={['font-medium', isDark ? 'text-slate-300' : 'text-slate-700'].join(' ')}>
                   {formatDate(sub.starts_at)}
                 </p>
               </div>
               <div>
-                <span className="text-xs uppercase tracking-wide">{pickLocaleText(locale, '到期', 'Expires')}</span>
+                <span className={['text-xs uppercase tracking-wide', isDark ? 'text-slate-500' : 'text-slate-400'].join(' ')}>{pickLocaleText(locale, '到期', 'Expires')}</span>
                 <p className={['font-medium', isDark ? 'text-slate-300' : 'text-slate-700'].join(' ')}>
                   {formatDate(sub.expires_at)}
                 </p>

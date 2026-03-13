@@ -29,7 +29,7 @@ export default function MainTabs({ activeTab, onTabChange, showSubscribeTab, sho
     <div
       className={[
         'inline-flex rounded-xl p-1',
-        isDark ? 'bg-slate-800' : 'bg-slate-100',
+        isDark ? 'bg-slate-900' : 'bg-slate-100',
       ].join(' ')}
     >
       {tabs.map((tab) => {
