@@ -3,6 +3,7 @@
 import React from 'react';
 import type { Locale } from '@/lib/locale';
 import { pickLocaleText } from '@/lib/locale';
+import { PlatformBadge } from '@/lib/platform-style';
 
 export interface UserSub {
   id: number;
@@ -13,6 +14,8 @@ export interface UserSub {
   daily_usage_usd: number;
   weekly_usage_usd: number;
   monthly_usage_usd: number;
+  group_name: string | null;
+  platform: string | null;
 }
 
 interface UserSubscriptionsProps {
@@ -82,8 +85,9 @@ export default function UserSubscriptions({ subscriptions, onRenew, isDark, loca
             {/* Header */}
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
+                {sub.platform && <PlatformBadge platform={sub.platform} />}
                 <span className={['text-base font-semibold', isDark ? 'text-slate-100' : 'text-slate-900'].join(' ')}>
-                  {pickLocaleText(locale, `渠道 #${sub.group_id}`, `Channel #${sub.group_id}`)}
+                  {sub.group_name || pickLocaleText(locale, `#${sub.group_id}`, `#${sub.group_id}`)}
                 </span>
                 <span className={['rounded-full px-2 py-0.5 text-xs font-medium', badge.className].join(' ')}>
                   {badge.text}

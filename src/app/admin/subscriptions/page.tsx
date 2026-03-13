@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import PayPageLayout from '@/components/PayPageLayout';
 import { resolveLocale, type Locale } from '@/lib/locale';
+import { PlatformBadge } from '@/lib/platform-style';
 
 /* ---------- types ---------- */
 
@@ -28,6 +29,8 @@ interface SubscriptionPlan {
   groupMonthlyLimit: number | null;
   groupModelScopes: string[] | null;
   productName: string | null;
+  groupAllowMessagesDispatch: boolean;
+  groupDefaultMappedModel: string | null;
 }
 
 interface Sub2ApiGroup {
@@ -37,6 +40,10 @@ interface Sub2ApiGroup {
   daily_limit_usd: number | null;
   weekly_limit_usd: number | null;
   monthly_limit_usd: number | null;
+  platform: string | null;
+  rate_multiplier: number | null;
+  allow_messages_dispatch: boolean;
+  default_mapped_model: string | null;
 }
 
 interface Sub2ApiSubscription {
@@ -393,6 +400,13 @@ function SubscriptionsContent() {
     fetchGroups();
   }, [fetchPlans, fetchGroups]);
 
+  /* auto-fetch subs when switching to subs tab */
+  useEffect(() => {
+    if (activeTab === 'subs' && !subsSearched) {
+      fetchSubs();
+    }
+  }, [activeTab]);
+
   /* --- modal helpers --- */
   const openCreate = () => {
     setEditingPlan(null);
@@ -401,8 +415,8 @@ function SubscriptionsContent() {
     setFormDescription('');
     setFormPrice('');
     setFormOriginalPrice('');
-    setFormValidDays('30');
-    setFormValidUnit('day');
+    setFormValidDays('1');
+    setFormValidUnit('month');
     setFormFeatures('');
     setFormSortOrder('0');
     setFormEnabled(true);
@@ -550,7 +564,7 @@ function SubscriptionsContent() {
 
   /* --- fetch user subs --- */
   const fetchSubs = async () => {
-    if (!token || !subsUserId.trim()) return;
+    if (!token) return;
     setSubsLoading(true);
     setSubsSearched(true);
     setSubsUser(null);
@@ -874,7 +888,7 @@ function SubscriptionsContent() {
                         {plan.groupPlatform && (
                           <div>
                             <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>{t.platform}</span>
-                            <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>{plan.groupPlatform}</div>
+                            <div className="mt-0.5"><PlatformBadge platform={plan.groupPlatform} /></div>
                           </div>
                         )}
                         {plan.groupRateMultiplier != null && (
@@ -901,20 +915,30 @@ function SubscriptionsContent() {
                             {plan.groupMonthlyLimit != null ? `$${plan.groupMonthlyLimit}` : t.unlimited}
                           </div>
                         </div>
-                        {plan.groupModelScopes && plan.groupModelScopes.length > 0 && (
-                          <div className="sm:col-span-3">
-                            <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>{t.modelScopes}</span>
-                            <div className="flex flex-wrap gap-1 mt-0.5">
-                              {plan.groupModelScopes.map((m) => (
-                                <span
-                                  key={m}
-                                  className={['inline-block rounded px-1.5 py-0.5 text-[10px]', isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'].join(' ')}
-                                >
-                                  {m}
+                        {plan.groupPlatform?.toLowerCase() === 'openai' && (
+                          <>
+                            <div>
+                              <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>/v1/messages</span>
+                              <div className="mt-0.5">
+                                <span className={[
+                                  'inline-block rounded-full px-1.5 py-0.5 text-[10px] font-medium',
+                                  plan.groupAllowMessagesDispatch
+                                    ? isDark ? 'bg-green-500/20 text-green-300' : 'bg-green-50 text-green-700'
+                                    : isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500',
+                                ].join(' ')}>
+                                  {plan.groupAllowMessagesDispatch ? '✓' : '✗'}
                                 </span>
-                              ))}
+                              </div>
                             </div>
-                          </div>
+                            {plan.groupDefaultMappedModel && (
+                              <div className="sm:col-span-2">
+                                <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>默认模型</span>
+                                <div className={['font-mono text-[10px]', isDark ? 'text-slate-300' : 'text-slate-600'].join(' ')}>
+                                  {plan.groupDefaultMappedModel}
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -977,7 +1001,7 @@ function SubscriptionsContent() {
             <button
               type="button"
               onClick={() => { setSearchDropdownOpen(false); fetchSubs(); }}
-              disabled={subsLoading || !subsUserId.trim()}
+              disabled={subsLoading}
               className={[
                 'inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50',
                 isDark
@@ -1023,7 +1047,7 @@ function SubscriptionsContent() {
               <div className={`py-12 text-center ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{t.loading}</div>
             ) : !subsSearched ? (
               <div className={`py-12 text-center ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                {t.enterUserId}
+                {t.loading}
               </div>
             ) : subs.length === 0 ? (
               <div className={`py-12 text-center ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{t.noSubs}</div>

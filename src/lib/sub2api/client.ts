@@ -247,6 +247,39 @@ export async function searchUsers(keyword: string): Promise<{ id: number; email:
   return (data.data ?? []) as { id: number; email: string; username: string; notes?: string }[];
 }
 
+export async function listSubscriptions(params?: {
+  user_id?: number;
+  group_id?: number;
+  status?: string;
+  page?: number;
+  page_size?: number;
+}): Promise<{ subscriptions: Sub2ApiSubscription[]; total: number; page: number; page_size: number }> {
+  const env = getEnv();
+  const qs = new URLSearchParams();
+  if (params?.user_id != null) qs.set('user_id', String(params.user_id));
+  if (params?.group_id != null) qs.set('group_id', String(params.group_id));
+  if (params?.status) qs.set('status', params.status);
+  if (params?.page != null) qs.set('page', String(params.page));
+  if (params?.page_size != null) qs.set('page_size', String(params.page_size));
+
+  const response = await fetch(`${env.SUB2API_BASE_URL}/api/v1/admin/subscriptions?${qs}`, {
+    headers: getHeaders(),
+    signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to list subscriptions: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return {
+    subscriptions: (data.data ?? []) as Sub2ApiSubscription[],
+    total: data.total ?? 0,
+    page: data.page ?? 1,
+    page_size: data.page_size ?? 50,
+  };
+}
+
 export async function addBalance(userId: number, amount: number, notes: string, idempotencyKey: string): Promise<void> {
   const env = getEnv();
   const response = await fetch(`${env.SUB2API_BASE_URL}/api/v1/admin/users/${userId}/balance`, {

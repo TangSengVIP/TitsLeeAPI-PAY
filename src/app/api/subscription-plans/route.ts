@@ -57,6 +57,8 @@ export async function GET(request: NextRequest) {
           platform: group?.platform ?? null,
           rateMultiplier: group?.rate_multiplier ?? null,
           limits: groupInfo,
+          allowMessagesDispatch: group?.allow_messages_dispatch ?? false,
+          defaultMappedModel: group?.default_mapped_model ?? null,
         };
       }),
     );

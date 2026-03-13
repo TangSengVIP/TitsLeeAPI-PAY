@@ -3,6 +3,7 @@
 import React from 'react';
 import type { Locale } from '@/lib/locale';
 import { pickLocaleText } from '@/lib/locale';
+import { PlatformBadge } from '@/lib/platform-style';
 
 export interface ChannelInfo {
   id: string;
@@ -23,39 +24,7 @@ interface ChannelCardProps {
   userBalance?: number;
 }
 
-const PLATFORM_STYLES: Record<string, { badge: string; border: string }> = {
-  claude: {
-    badge: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30',
-    border: 'border-orange-500/20',
-  },
-  openai: {
-    badge: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30',
-    border: 'border-green-500/20',
-  },
-  gemini: {
-    badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
-    border: 'border-blue-500/20',
-  },
-  codex: {
-    badge: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30',
-    border: 'border-green-500/20',
-  },
-  sora: {
-    badge: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30',
-    border: 'border-pink-500/20',
-  },
-};
-
-function getPlatformStyle(platform: string) {
-  const key = platform.toLowerCase();
-  return PLATFORM_STYLES[key] ?? {
-    badge: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30',
-    border: 'border-slate-500/20',
-  };
-}
-
 export default function ChannelCard({ channel, onTopUp, isDark, locale }: ChannelCardProps) {
-  const platformStyle = getPlatformStyle(channel.platform);
   const usableQuota = (1 / channel.rateMultiplier).toFixed(2);
 
   return (
@@ -68,9 +37,7 @@ export default function ChannelCard({ channel, onTopUp, isDark, locale }: Channe
       {/* Header: Platform badge + Name */}
       <div className="mb-4">
         <div className="mb-3 flex items-center gap-2">
-          <span className={['rounded-md border px-2 py-0.5 text-xs font-medium', platformStyle.badge].join(' ')}>
-            {channel.platform}
-          </span>
+          <PlatformBadge platform={channel.platform} />
           <h3 className={['text-lg font-bold', isDark ? 'text-slate-100' : 'text-slate-900'].join(' ')}>
             {channel.name}
           </h3>

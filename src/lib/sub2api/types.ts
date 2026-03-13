@@ -39,6 +39,8 @@ export interface Sub2ApiGroup {
   default_validity_days: number;
   sort_order: number;
   supported_model_scopes: string[] | null;
+  allow_messages_dispatch?: boolean;
+  default_mapped_model?: string;
 }
 
 // ── 订阅 ──
