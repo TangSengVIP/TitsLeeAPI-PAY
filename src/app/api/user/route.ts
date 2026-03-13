@@ -5,6 +5,7 @@ import { queryMethodLimits } from '@/lib/order/limits';
 import { initPaymentProviders, paymentRegistry } from '@/lib/payment';
 import { getPaymentDisplayInfo } from '@/lib/pay-utils';
 import { resolveLocale } from '@/lib/locale';
+import { getSystemConfig } from '@/lib/system-config';
 
 export async function GET(request: NextRequest) {
   const locale = resolveLocale(request.nextUrl.searchParams.get('lang'));
@@ -40,7 +41,12 @@ export async function GET(request: NextRequest) {
     const env = getEnv();
     initPaymentProviders();
     const enabledTypes = paymentRegistry.getSupportedTypes();
-    const [user, methodLimits] = await Promise.all([getUser(userId), queryMethodLimits(enabledTypes)]);
+    const [user, methodLimits, balanceDisabledVal] = await Promise.all([
+      getUser(userId),
+      queryMethodLimits(enabledTypes),
+      getSystemConfig('BALANCE_PAYMENT_DISABLED'),
+    ]);
+    const balanceDisabled = balanceDisabledVal === 'true';
 
     // 收集 sublabel 覆盖
     const sublabelOverrides: Record<string, string> = {};
@@ -84,6 +90,7 @@ export async function GET(request: NextRequest) {
         helpText: env.PAY_HELP_TEXT ?? null,
         stripePublishableKey:
           enabledTypes.includes('stripe') && env.STRIPE_PUBLISHABLE_KEY ? env.STRIPE_PUBLISHABLE_KEY : null,
+        balanceDisabled,
         sublabelOverrides: Object.keys(sublabelOverrides).length > 0 ? sublabelOverrides : null,
       },
     });

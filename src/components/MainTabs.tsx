@@ -8,17 +8,22 @@ interface MainTabsProps {
   activeTab: 'topup' | 'subscribe';
   onTabChange: (tab: 'topup' | 'subscribe') => void;
   showSubscribeTab: boolean;
+  showTopUpTab?: boolean;
   isDark: boolean;
   locale: Locale;
 }
 
-export default function MainTabs({ activeTab, onTabChange, showSubscribeTab, isDark, locale }: MainTabsProps) {
+export default function MainTabs({ activeTab, onTabChange, showSubscribeTab, showTopUpTab = true, isDark, locale }: MainTabsProps) {
   if (!showSubscribeTab) return null;
 
-  const tabs: { key: 'topup' | 'subscribe'; label: string }[] = [
-    { key: 'topup', label: pickLocaleText(locale, '按量付费', 'Pay-as-you-go') },
-    { key: 'subscribe', label: pickLocaleText(locale, '包月套餐', 'Subscription') },
-  ];
+  const tabs: { key: 'topup' | 'subscribe'; label: string }[] = [];
+  if (showTopUpTab) {
+    tabs.push({ key: 'topup', label: pickLocaleText(locale, '按量付费', 'Pay-as-you-go') });
+  }
+  tabs.push({ key: 'subscribe', label: pickLocaleText(locale, '包月套餐', 'Subscription') });
+
+  // 只有一个 tab 时不显示切换器
+  if (tabs.length <= 1) return null;
 
   return (
     <div

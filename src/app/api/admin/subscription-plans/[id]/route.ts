@@ -48,6 +48,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       data.validityUnit = body.validity_unit;
     }
     if (body.features !== undefined) data.features = body.features ? JSON.stringify(body.features) : null;
+    if (body.product_name !== undefined) data.productName = body.product_name?.trim() || null;
     if (body.for_sale !== undefined) data.forSale = body.for_sale;
     if (body.sort_order !== undefined) data.sortOrder = body.sort_order;
 
@@ -69,6 +70,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       features: plan.features ? JSON.parse(plan.features) : [],
       sortOrder: plan.sortOrder,
       enabled: plan.forSale,
+      productName: plan.productName ?? null,
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
     });

@@ -227,6 +227,26 @@ export async function subtractBalance(
   }
 }
 
+// ── 用户搜索 API ──
+
+export async function searchUsers(keyword: string): Promise<{ id: number; email: string; username: string; notes?: string }[]> {
+  const env = getEnv();
+  const response = await fetch(
+    `${env.SUB2API_BASE_URL}/api/v1/admin/users?search=${encodeURIComponent(keyword)}&page=1&page_size=30`,
+    {
+      headers: getHeaders(),
+      signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to search users: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return (data.data ?? []) as { id: number; email: string; username: string; notes?: string }[];
+}
+
 export async function addBalance(userId: number, amount: number, notes: string, idempotencyKey: string): Promise<void> {
   const env = getEnv();
   const response = await fetch(`${env.SUB2API_BASE_URL}/api/v1/admin/users/${userId}/balance`, {

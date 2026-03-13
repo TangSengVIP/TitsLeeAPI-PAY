@@ -27,6 +27,7 @@ interface SubscriptionPlan {
   groupWeeklyLimit: number | null;
   groupMonthlyLimit: number | null;
   groupModelScopes: string[] | null;
+  productName: string | null;
 }
 
 interface Sub2ApiGroup {
@@ -103,7 +104,7 @@ function buildText(locale: Locale) {
         colOriginalPrice: 'Original Price',
         colValidDays: 'Validity',
         colEnabled: 'For Sale',
-        colGroupStatus: 'Group Status',
+        colGroupStatus: 'Sub2API Status',
         colActions: 'Actions',
         edit: 'Edit',
         delete: 'Delete',
@@ -112,10 +113,12 @@ function buildText(locale: Locale) {
         groupExists: 'Exists',
         groupMissing: 'Missing',
         noPlans: 'No plans configured',
-        searchUserId: 'Search by user ID',
+        searchUserId: 'Email / Username / Notes / API Key',
         search: 'Search',
         noSubs: 'No subscription records found',
-        enterUserId: 'Enter a user ID to search',
+        enterUserId: 'Enter a keyword to search users',
+        fieldProductName: 'Payment Product Name',
+        fieldProductNamePlaceholder: 'Leave empty for default',
         saveFailed: 'Failed to save plan',
         deleteFailed: 'Failed to delete plan',
         loadFailed: 'Failed to load data',
@@ -183,7 +186,7 @@ function buildText(locale: Locale) {
         colOriginalPrice: '原价',
         colValidDays: '有效期',
         colEnabled: '启用售卖',
-        colGroupStatus: '分组状态',
+        colGroupStatus: 'Sub2API 状态',
         colActions: '操作',
         edit: '编辑',
         delete: '删除',
@@ -192,10 +195,12 @@ function buildText(locale: Locale) {
         groupExists: '存在',
         groupMissing: '缺失',
         noPlans: '暂无套餐配置',
-        searchUserId: '按用户 ID 搜索',
+        searchUserId: '邮箱/用户名/备注/API Key',
         search: '搜索',
         noSubs: '未找到订阅记录',
-        enterUserId: '请输入用户 ID 进行搜索',
+        enterUserId: '输入关键词搜索用户',
+        fieldProductName: '支付商品名称',
+        fieldProductNamePlaceholder: '留空使用默认名称',
         saveFailed: '保存套餐失败',
         deleteFailed: '删除套餐失败',
         loadFailed: '加载数据失败',
@@ -332,10 +337,15 @@ function SubscriptionsContent() {
   const [formFeatures, setFormFeatures] = useState('');
   const [formSortOrder, setFormSortOrder] = useState('0');
   const [formEnabled, setFormEnabled] = useState(true);
+  const [formProductName, setFormProductName] = useState('');
   const [saving, setSaving] = useState(false);
 
   /* --- subs state --- */
   const [subsUserId, setSubsUserId] = useState('');
+  const [subsKeyword, setSubsKeyword] = useState('');
+  const [searchResults, setSearchResults] = useState<{ id: number; email: string; username: string; notes?: string }[]>([]);
+  const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
+  const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [subs, setSubs] = useState<Sub2ApiSubscription[]>([]);
   const [subsUser, setSubsUser] = useState<SubsUserInfo | null>(null);
   const [subsLoading, setSubsLoading] = useState(false);
@@ -396,6 +406,7 @@ function SubscriptionsContent() {
     setFormFeatures('');
     setFormSortOrder('0');
     setFormEnabled(true);
+    setFormProductName('');
     setModalOpen(true);
   };
 
@@ -411,6 +422,7 @@ function SubscriptionsContent() {
     setFormFeatures((plan.features ?? []).join('\n'));
     setFormSortOrder(String(plan.sortOrder));
     setFormEnabled(plan.enabled);
+    setFormProductName(plan.productName ?? '');
     setModalOpen(true);
   };
 
@@ -438,6 +450,7 @@ function SubscriptionsContent() {
         .filter(Boolean),
       sort_order: parseInt(formSortOrder, 10) || 0,
       for_sale: formEnabled,
+      product_name: formProductName.trim() || null,
     };
     try {
       const url = editingPlan
@@ -500,6 +513,39 @@ function SubscriptionsContent() {
     } catch {
       /* ignore */
     }
+  };
+
+  /* --- search users (R1) --- */
+  const handleKeywordChange = (value: string) => {
+    setSubsKeyword(value);
+    if (searchTimer) clearTimeout(searchTimer);
+    if (!value.trim()) {
+      setSearchResults([]);
+      setSearchDropdownOpen(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/admin/sub2api/search-users?token=${encodeURIComponent(token)}&keyword=${encodeURIComponent(value.trim())}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(data.users ?? []);
+          setSearchDropdownOpen(true);
+        }
+      } catch {
+        /* ignore */
+      }
+    }, 300);
+    setSearchTimer(timer);
+  };
+
+  const selectUser = (user: { id: number; email: string; username: string }) => {
+    setSubsUserId(String(user.id));
+    setSubsKeyword(`${user.email} #${user.id}`);
+    setSearchDropdownOpen(false);
+    setSearchResults([]);
   };
 
   /* --- fetch user subs --- */
@@ -883,19 +929,54 @@ function SubscriptionsContent() {
       {/* ====== Tab: User Subscriptions ====== */}
       {activeTab === 'subs' && (
         <>
-          {/* Search bar */}
+          {/* Search bar (R1: fuzzy search) */}
           <div className="mb-4 flex gap-2">
-            <input
-              type="text"
-              value={subsUserId}
-              onChange={(e) => setSubsUserId(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && fetchSubs()}
-              placeholder={t.searchUserId}
-              className={[inputCls, 'max-w-xs'].join(' ')}
-            />
+            <div className="relative max-w-sm flex-1">
+              <input
+                type="text"
+                value={subsKeyword}
+                onChange={(e) => handleKeywordChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setSearchDropdownOpen(false);
+                    fetchSubs();
+                  }
+                }}
+                onFocus={() => { if (searchResults.length > 0) setSearchDropdownOpen(true); }}
+                placeholder={t.searchUserId}
+                className={inputCls}
+              />
+              {/* Dropdown */}
+              {searchDropdownOpen && searchResults.length > 0 && (
+                <div
+                  className={[
+                    'absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border shadow-lg',
+                    isDark ? 'border-slate-600 bg-slate-800' : 'border-slate-200 bg-white',
+                  ].join(' ')}
+                >
+                  {searchResults.map((u) => (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => selectUser(u)}
+                      className={[
+                        'w-full px-3 py-2 text-left text-sm transition-colors',
+                        isDark ? 'hover:bg-slate-700 text-slate-200' : 'hover:bg-slate-50 text-slate-800',
+                      ].join(' ')}
+                    >
+                      <div className="font-medium">{u.email}</div>
+                      <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {u.username} #{u.id}
+                        {u.notes && <span className="ml-2 opacity-70">({u.notes})</span>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               type="button"
-              onClick={fetchSubs}
+              onClick={() => { setSearchDropdownOpen(false); fetchSubs(); }}
               disabled={subsLoading || !subsUserId.trim()}
               className={[
                 'inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50',
@@ -1188,6 +1269,18 @@ function SubscriptionsContent() {
                   value={formFeatures}
                   onChange={(e) => setFormFeatures(e.target.value)}
                   rows={4}
+                  className={inputCls}
+                />
+              </div>
+
+              {/* Product Name (R3) */}
+              <div>
+                <label className={labelCls}>{t.fieldProductName}</label>
+                <input
+                  type="text"
+                  value={formProductName}
+                  onChange={(e) => setFormProductName(e.target.value)}
+                  placeholder={t.fieldProductNamePlaceholder}
                   className={inputCls}
                 />
               </div>

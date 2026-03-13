@@ -43,6 +43,7 @@ interface AppConfig {
   helpImageUrl?: string | null;
   helpText?: string | null;
   stripePublishableKey?: string | null;
+  balanceDisabled?: boolean;
 }
 
 function PayContent() {
@@ -123,6 +124,8 @@ function PayContent() {
   const MAX_PENDING = 3;
   const pendingBlocked = pendingCount >= MAX_PENDING;
 
+  // R6: 余额充值是否被禁用
+  const balanceDisabled = config.balanceDisabled === true;
   // 是否有渠道配置（决定是直接显示充值表单还是渠道卡片+弹窗）
   const hasChannels = channels.length > 0;
   // 是否有可售卖套餐
@@ -196,6 +199,7 @@ function PayContent() {
             helpImageUrl: cfgData.config.helpImageUrl ?? null,
             helpText: cfgData.config.helpText ?? null,
             stripePublishableKey: cfgData.config.stripePublishableKey ?? null,
+            balanceDisabled: cfgData.config.balanceDisabled ?? false,
           });
           if (cfgData.config.sublabelOverrides) {
             applySublabelOverrides(cfgData.config.sublabelOverrides);
@@ -463,7 +467,9 @@ function PayContent() {
   };
 
   // ── 渲染 ──
-  const showMainTabs = channelsLoaded && (hasChannels || hasPlans);
+  // R7: 检查是否所有入口都关闭
+  const allEntriesClosed = channelsLoaded && balanceDisabled && !hasPlans;
+  const showMainTabs = channelsLoaded && !allEntriesClosed && (hasChannels || hasPlans);
   const pageTitle = showMainTabs
     ? pickLocaleText(locale, '选择适合你的 订阅套餐', 'Choose Your Plan')
     : pickLocaleText(locale, 'Sub2API 余额充值', 'Sub2API Balance Recharge');
@@ -576,12 +582,33 @@ function PayContent() {
             </div>
           )}
 
+          {/* R7: 所有入口关闭提示 */}
+          {allEntriesClosed && (activeMobileTab === 'pay' || !isMobile) && (
+            <div className={[
+              'rounded-2xl border p-8 text-center',
+              isDark ? 'border-slate-700 bg-slate-800/70' : 'border-slate-200 bg-white shadow-sm',
+            ].join(' ')}>
+              <div className={['text-4xl mb-4'].join(' ')}>
+                <svg className={['mx-auto h-12 w-12', isDark ? 'text-slate-500' : 'text-slate-400'].join(' ')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                </svg>
+              </div>
+              <p className={['text-lg font-medium mb-2', isDark ? 'text-slate-200' : 'text-slate-800'].join(' ')}>
+                {pickLocaleText(locale, '充值/订阅入口已被管理员关闭', 'Recharge / Subscription entry has been closed by admin')}
+              </p>
+              <p className={['text-sm', isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
+                {pickLocaleText(locale, '如有疑问，请联系管理员', 'Please contact the administrator if you have questions')}
+              </p>
+            </div>
+          )}
+
           {/* ── 有渠道配置：新版UI ── */}
           {channelsLoaded && showMainTabs && (activeMobileTab === 'pay' || !isMobile) && !selectedPlan && !showTopUpForm && (
             <>
-              <MainTabs activeTab={mainTab} onTabChange={setMainTab} showSubscribeTab={hasPlans} isDark={isDark} locale={locale} />
+              <MainTabs activeTab={balanceDisabled ? 'subscribe' : mainTab} onTabChange={setMainTab} showSubscribeTab={hasPlans} showTopUpTab={!balanceDisabled} isDark={isDark} locale={locale} />
 
-              {mainTab === 'topup' && (
+              {mainTab === 'topup' && !balanceDisabled && (
                 <div className="mt-6">
                   {/* 按量付费说明 banner */}
                   <div className={[
@@ -766,7 +793,7 @@ function PayContent() {
           )}
 
           {/* ── 无渠道配置：传统充值UI ── */}
-          {channelsLoaded && !showMainTabs && config.enabledPaymentTypes.length > 0 && !selectedPlan && (
+          {channelsLoaded && !showMainTabs && !balanceDisabled && config.enabledPaymentTypes.length > 0 && !selectedPlan && (
             <>
               {isMobile ? (
                 activeMobileTab === 'pay' ? (

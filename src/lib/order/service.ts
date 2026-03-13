@@ -13,6 +13,7 @@ import { deriveOrderState, isRefundStatus } from './status';
 import { pickLocaleText, type Locale } from '@/lib/locale';
 import { getBizDayStartUTC } from '@/lib/time/biz-day';
 import { buildOrderResultUrl, createOrderStatusAccessToken } from '@/lib/order/status-access';
+import { getSystemConfig, getSystemConfigs } from '@/lib/system-config';
 
 const MAX_PENDING_ORDERS = 3;
 /** Decimal(10,2) 允许的最大金额 */
@@ -59,8 +60,21 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
   const orderType = input.orderType ?? 'balance';
 
   // ── 订阅订单前置校验 ──
-  let subscriptionPlan: { id: string; groupId: number; price: Prisma.Decimal; validityDays: number; validityUnit: string; name: string } | null = null;
+  let subscriptionPlan: { id: string; groupId: number; price: Prisma.Decimal; validityDays: number; validityUnit: string; name: string; productName: string | null } | null = null;
   let subscriptionGroupName = '';
+
+  // R6: 余额充值禁用检查
+  if (orderType === 'balance') {
+    const balanceDisabled = await getSystemConfig('BALANCE_PAYMENT_DISABLED');
+    if (balanceDisabled === 'true') {
+      throw new OrderError(
+        'BALANCE_PAYMENT_DISABLED',
+        message(locale, '余额充值已被管理员关闭', 'Balance recharge has been disabled by the administrator'),
+        403,
+      );
+    }
+  }
+
   if (orderType === 'subscription') {
     if (!input.planId) {
       throw new OrderError('INVALID_INPUT', message(locale, '订阅订单必须指定套餐', 'Subscription order requires a plan'), 400);
@@ -76,6 +90,14 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         'GROUP_NOT_FOUND',
         message(locale, '订阅分组已下架，无法购买', 'Subscription group is no longer available'),
         410,
+      );
+    }
+    // R4: 校验分组必须为订阅类型
+    if (group.subscription_type !== 'subscription') {
+      throw new OrderError(
+        'GROUP_TYPE_MISMATCH',
+        message(locale, '该分组不是订阅类型，无法购买订阅', 'This group is not a subscription type'),
+        400,
       );
     }
     subscriptionGroupName = group?.name || plan.name;
@@ -216,13 +238,28 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       returnUrl = orderResultUrl;
     }
 
+    // R3+R5: 构建支付商品名称
+    let paymentSubject: string;
+    if (subscriptionPlan) {
+      // R3: 订阅订单优先使用套餐自定义商品名称
+      paymentSubject = subscriptionPlan.productName || `Sub2API 订阅 ${subscriptionGroupName || subscriptionPlan.name}`;
+    } else {
+      // R5: 余额订单使用前缀/后缀配置
+      const nameConfigs = await getSystemConfigs(['PRODUCT_NAME_PREFIX', 'PRODUCT_NAME_SUFFIX']);
+      const prefix = nameConfigs['PRODUCT_NAME_PREFIX']?.trim();
+      const suffix = nameConfigs['PRODUCT_NAME_SUFFIX']?.trim();
+      if (prefix || suffix) {
+        paymentSubject = `${prefix || ''} ${payAmountStr} ${suffix || ''}`.trim();
+      } else {
+        paymentSubject = `${env.PRODUCT_NAME} ${payAmountStr} CNY`;
+      }
+    }
+
     const paymentResult = await provider.createPayment({
       orderId: order.id,
       amount: payAmountNum,
       paymentType: input.paymentType,
-      subject: subscriptionPlan
-        ? `Sub2API 订阅 ${subscriptionGroupName || subscriptionPlan.name}`
-        : `${env.PRODUCT_NAME} ${payAmountStr} CNY`,
+      subject: paymentSubject,
       notifyUrl,
       returnUrl,
       clientIp: input.clientIp,

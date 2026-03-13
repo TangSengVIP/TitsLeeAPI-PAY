@@ -48,6 +48,9 @@ export async function PUT(request: NextRequest) {
       'DAILY_RECHARGE_LIMIT',
       'ORDER_TIMEOUT_MINUTES',
       'IFRAME_ALLOW_ORIGINS',
+      'PRODUCT_NAME_PREFIX',
+      'PRODUCT_NAME_SUFFIX',
+      'BALANCE_PAYMENT_DISABLED',
     ]);
 
     // 校验每条配置

@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
           groupWeeklyLimit: group?.weekly_limit_usd ?? null,
           groupMonthlyLimit: group?.monthly_limit_usd ?? null,
           groupModelScopes: group?.supported_model_scopes ?? null,
+          productName: plan.productName ?? null,
           createdAt: plan.createdAt,
           updatedAt: plan.updatedAt,
         };
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { group_id, name, description, price, original_price, validity_days, validity_unit, features, for_sale, sort_order } = body;
+    const { group_id, name, description, price, original_price, validity_days, validity_unit, features, for_sale, sort_order, product_name } = body;
 
     if (!group_id || !name || price === undefined) {
       return NextResponse.json({ error: '缺少必填字段: group_id, name, price' }, { status: 400 });
@@ -103,6 +104,7 @@ export async function POST(request: NextRequest) {
         validityDays: validity_days ?? 30,
         validityUnit: ['day', 'week', 'month'].includes(validity_unit) ? validity_unit : 'day',
         features: features ? JSON.stringify(features) : null,
+        productName: product_name?.trim() || null,
         forSale: for_sale ?? false,
         sortOrder: sort_order ?? 0,
       },
@@ -122,6 +124,7 @@ export async function POST(request: NextRequest) {
         features: plan.features ? JSON.parse(plan.features) : [],
         sortOrder: plan.sortOrder,
         enabled: plan.forSale,
+        productName: plan.productName ?? null,
         createdAt: plan.createdAt,
         updatedAt: plan.updatedAt,
       },

@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
           validityDays: plan.validityDays,
           validityUnit: plan.validityUnit,
           features: plan.features ? JSON.parse(plan.features) : [],
+          productName: plan.productName ?? null,
           platform: group?.platform ?? null,
           rateMultiplier: group?.rate_multiplier ?? null,
           limits: groupInfo,

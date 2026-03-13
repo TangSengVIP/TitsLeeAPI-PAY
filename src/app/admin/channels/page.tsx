@@ -110,6 +110,15 @@ function getTexts(locale: Locale) {
         syncImportSuccess: (n: number) => `Successfully imported ${n} channel(s)`,
         yes: 'Yes',
         no: 'No',
+        rechargeConfig: 'Recharge Configuration',
+        productNamePrefix: 'Product Name Prefix',
+        productNameSuffix: 'Product Name Suffix',
+        preview: 'Preview',
+        enableBalanceRecharge: 'Enable Balance Recharge',
+        saveConfig: 'Save',
+        savingConfig: 'Saving...',
+        configSaved: 'Configuration saved',
+        configSaveFailed: 'Failed to save configuration',
       }
     : {
         missingToken: '缺少管理员凭证',
@@ -163,6 +172,15 @@ function getTexts(locale: Locale) {
         syncImportSuccess: (n: number) => `成功导入 ${n} 个渠道`,
         yes: '是',
         no: '否',
+        rechargeConfig: '充值配置',
+        productNamePrefix: '商品名前缀',
+        productNameSuffix: '商品名后缀',
+        preview: '预览',
+        enableBalanceRecharge: '启用余额充值',
+        saveConfig: '保存',
+        savingConfig: '保存中...',
+        configSaved: '配置已保存',
+        configSaveFailed: '保存配置失败',
       };
 }
 
@@ -224,6 +242,12 @@ function ChannelsContent() {
   const [form, setForm] = useState<ChannelFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
 
+  // Recharge config state (R5, R6)
+  const [rcPrefix, setRcPrefix] = useState('');
+  const [rcSuffix, setRcSuffix] = useState('');
+  const [rcBalanceEnabled, setRcBalanceEnabled] = useState(true);
+  const [rcSaving, setRcSaving] = useState(false);
+
   // Sync modal state
   const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [syncGroups, setSyncGroups] = useState<Sub2ApiGroup[]>([]);
@@ -254,9 +278,55 @@ function ChannelsContent() {
     }
   }, [token]);
 
+  // Fetch recharge config
+  const fetchRechargeConfig = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`/api/admin/config?token=${encodeURIComponent(token)}`);
+      if (res.ok) {
+        const data = await res.json();
+        const configs: { key: string; value: string }[] = data.configs ?? [];
+        for (const c of configs) {
+          if (c.key === 'PRODUCT_NAME_PREFIX') setRcPrefix(c.value);
+          if (c.key === 'PRODUCT_NAME_SUFFIX') setRcSuffix(c.value);
+          if (c.key === 'BALANCE_PAYMENT_DISABLED') setRcBalanceEnabled(c.value !== 'true');
+        }
+      }
+    } catch { /* ignore */ }
+  }, [token]);
+
+  const saveRechargeConfig = async () => {
+    setRcSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/config', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          configs: [
+            { key: 'PRODUCT_NAME_PREFIX', value: rcPrefix.trim(), group: 'payment', label: '商品名前缀' },
+            { key: 'PRODUCT_NAME_SUFFIX', value: rcSuffix.trim(), group: 'payment', label: '商品名后缀' },
+            { key: 'BALANCE_PAYMENT_DISABLED', value: rcBalanceEnabled ? 'false' : 'true', group: 'payment', label: '余额充值禁用' },
+          ],
+        }),
+      });
+      if (!res.ok) {
+        setError(t.configSaveFailed);
+      }
+    } catch {
+      setError(t.configSaveFailed);
+    } finally {
+      setRcSaving(false);
+    }
+  };
+
   useEffect(() => {
     fetchChannels();
-  }, [fetchChannels]);
+    fetchRechargeConfig();
+  }, [fetchChannels, fetchRechargeConfig]);
 
   // ── Missing token ──
 
@@ -536,6 +606,76 @@ function ChannelsContent() {
           </button>
         </div>
       )}
+
+      {/* Recharge config card (R5, R6) */}
+      <div
+        className={[
+          'mb-4 rounded-xl border p-4',
+          isDark ? 'border-slate-700 bg-slate-800/70' : 'border-slate-200 bg-white shadow-sm',
+        ].join(' ')}
+      >
+        <h3 className={['text-sm font-semibold mb-3', isDark ? 'text-slate-200' : 'text-slate-800'].join(' ')}>
+          {t.rechargeConfig}
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className={labelCls}>{t.productNamePrefix}</label>
+            <input
+              type="text"
+              value={rcPrefix}
+              onChange={(e) => setRcPrefix(e.target.value)}
+              className={inputCls}
+              placeholder="Sub2API"
+            />
+          </div>
+          <div>
+            <label className={labelCls}>{t.productNameSuffix}</label>
+            <input
+              type="text"
+              value={rcSuffix}
+              onChange={(e) => setRcSuffix(e.target.value)}
+              className={inputCls}
+              placeholder="CNY"
+            />
+          </div>
+          <div>
+            <label className={labelCls}>{t.preview}</label>
+            <div className={['rounded-lg border px-3 py-2 text-sm', isDark ? 'border-slate-600 bg-slate-700 text-slate-300' : 'border-slate-300 bg-slate-50 text-slate-600'].join(' ')}>
+              {`${rcPrefix.trim() || 'Sub2API'} 100 ${rcSuffix.trim() || 'CNY'}`.trim()}
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setRcBalanceEnabled(!rcBalanceEnabled)}
+              className={[
+                'relative inline-flex h-5 w-9 items-center rounded-full transition-colors',
+                rcBalanceEnabled ? 'bg-emerald-500' : isDark ? 'bg-slate-600' : 'bg-slate-300',
+              ].join(' ')}
+            >
+              <span
+                className={[
+                  'inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform',
+                  rcBalanceEnabled ? 'translate-x-4.5' : 'translate-x-0.5',
+                ].join(' ')}
+              />
+            </button>
+            <span className={['text-sm', isDark ? 'text-slate-300' : 'text-slate-700'].join(' ')}>
+              {t.enableBalanceRecharge}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={saveRechargeConfig}
+            disabled={rcSaving}
+            className="inline-flex items-center rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-600 disabled:opacity-50"
+          >
+            {rcSaving ? t.savingConfig : t.saveConfig}
+          </button>
+        </div>
+      </div>
 
       {/* Channel table */}
       <div

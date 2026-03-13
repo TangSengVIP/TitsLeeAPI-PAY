@@ -116,6 +116,7 @@ model SubscriptionPlan {
   validityDays  Int      @default(30) @map("validity_days")
   validityUnit  String   @default("day") @map("validity_unit") // day | week | month
   features      String?  @db.Text
+  productName   String?  @map("product_name")
   forSale       Boolean  @default(false) @map("for_sale")
   sortOrder     Int      @default(0) @map("sort_order")
   createdAt     DateTime @default(now()) @map("created_at")
