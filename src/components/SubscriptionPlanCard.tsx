@@ -4,7 +4,7 @@ import React from 'react';
 import type { Locale } from '@/lib/locale';
 import { pickLocaleText } from '@/lib/locale';
 import { formatValidityLabel, formatValiditySuffix, type ValidityUnit } from '@/lib/subscription-utils';
-import { PlatformBadge } from '@/lib/platform-style';
+import { PlatformBadge, getPlatformStyle } from '@/lib/platform-style';
 
 export interface PlanInfo {
   id: string;
@@ -47,6 +47,8 @@ export default function SubscriptionPlanCard({ plan, onSubscribe, isDark, locale
   );
 
   const isOpenAI = plan.platform?.toLowerCase() === 'openai';
+  const ps = getPlatformStyle(plan.platform ?? '');
+  const accentCls = isDark ? ps.accent.dark : ps.accent.light;
 
   return (
     <div
@@ -87,7 +89,7 @@ export default function SubscriptionPlanCard({ plan, onSubscribe, isDark, locale
               ¥{plan.originalPrice}
             </span>
           )}
-          <span className="text-3xl font-bold text-emerald-500">¥{plan.price}</span>
+          <span className={['text-3xl font-bold', accentCls].join(' ')}>¥{plan.price}</span>
           <span className={['text-sm', isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
             {periodSuffix}
           </span>
@@ -110,9 +112,9 @@ export default function SubscriptionPlanCard({ plan, onSubscribe, isDark, locale
                 {pickLocaleText(locale, '倍率', 'Rate')}
               </span>
               <div className="flex items-baseline">
-                <span className="text-lg font-bold text-emerald-500">1</span>
+                <span className={['text-lg font-bold', accentCls].join(' ')}>1</span>
                 <span className={['mx-1 text-base', isDark ? 'text-slate-500' : 'text-slate-400'].join(' ')}>:</span>
-                <span className="text-lg font-bold text-emerald-500">{plan.rateMultiplier}</span>
+                <span className={['text-lg font-bold', accentCls].join(' ')}>{plan.rateMultiplier}</span>
               </div>
             </div>
           )}
@@ -193,7 +195,10 @@ export default function SubscriptionPlanCard({ plan, onSubscribe, isDark, locale
       <button
         type="button"
         onClick={() => onSubscribe(plan.id)}
-        className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 active:bg-emerald-700"
+        className={[
+          'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-colors',
+          ps.button,
+        ].join(' ')}
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
