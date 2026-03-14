@@ -102,4 +102,13 @@ describe('GET /api/user', () => {
     expect(data.config.enabledPaymentTypes).toEqual(['alipay', 'wxpay', 'stripe']);
     expect(mockQueryMethodLimits).toHaveBeenCalledWith(['alipay', 'wxpay', 'stripe']);
   });
+
+  it('falls back to supported payment types when ENABLED_PAYMENT_TYPES is undefined', async () => {
+    const response = await GET(createRequest());
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.config.enabledPaymentTypes).toEqual(['alipay', 'wxpay', 'stripe']);
+    expect(mockQueryMethodLimits).toHaveBeenCalledWith(['alipay', 'wxpay', 'stripe']);
+  });
 });

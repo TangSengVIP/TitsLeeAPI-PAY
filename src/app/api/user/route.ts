@@ -55,12 +55,12 @@ export async function GET(request: NextRequest) {
     const env = getEnv();
     initPaymentProviders();
     const supportedTypes = paymentRegistry.getSupportedTypes();
-    const [user, configuredEnabledTypes, balanceDisabledVal] = await Promise.all([
+    const [user, configuredPaymentTypesRaw, balanceDisabledVal] = await Promise.all([
       getUser(userId),
       getSystemConfig('ENABLED_PAYMENT_TYPES'),
       getSystemConfig('BALANCE_PAYMENT_DISABLED'),
     ]);
-    const enabledTypes = resolveEnabledPaymentTypes(supportedTypes, configuredEnabledTypes);
+    const enabledTypes = resolveEnabledPaymentTypes(supportedTypes, configuredPaymentTypesRaw);
     const methodLimits = await queryMethodLimits(enabledTypes);
     const balanceDisabled = balanceDisabledVal === 'true';
 
