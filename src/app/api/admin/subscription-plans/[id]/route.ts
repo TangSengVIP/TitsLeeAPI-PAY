@@ -61,10 +61,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (body.validity_days !== undefined && (!Number.isInteger(body.validity_days) || body.validity_days <= 0)) {
       return NextResponse.json({ error: 'validity_days 必须是正整数' }, { status: 400 });
     }
+    if (body.name !== undefined && (typeof body.name !== 'string' || body.name.trim() === '')) {
+      return NextResponse.json({ error: 'name 不能为空' }, { status: 400 });
+    }
+    if (body.name !== undefined && body.name.length > 100) {
+      return NextResponse.json({ error: 'name 不能超过 100 个字符' }, { status: 400 });
+    }
+    if (body.sort_order !== undefined && (!Number.isInteger(body.sort_order) || body.sort_order < 0)) {
+      return NextResponse.json({ error: 'sort_order 必须是非负整数' }, { status: 400 });
+    }
 
     const data: Record<string, unknown> = {};
     if (body.group_id !== undefined) data.groupId = Number(body.group_id);
-    if (body.name !== undefined) data.name = body.name;
+    if (body.name !== undefined) data.name = body.name.trim();
     if (body.description !== undefined) data.description = body.description;
     if (body.price !== undefined) data.price = body.price;
     if (body.original_price !== undefined) data.originalPrice = body.original_price;

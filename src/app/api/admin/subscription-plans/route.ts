@@ -93,8 +93,14 @@ export async function POST(request: NextRequest) {
       product_name,
     } = body;
 
-    if (!group_id || !name || price === undefined) {
-      return NextResponse.json({ error: '缺少必填字段: group_id, name, price' }, { status: 400 });
+    if (!group_id || price === undefined) {
+      return NextResponse.json({ error: '缺少必填字段: group_id, price' }, { status: 400 });
+    }
+    if (typeof name !== 'string' || name.trim() === '') {
+      return NextResponse.json({ error: 'name 不能为空' }, { status: 400 });
+    }
+    if (name.length > 100) {
+      return NextResponse.json({ error: 'name 不能超过 100 个字符' }, { status: 400 });
     }
 
     if (typeof price !== 'number' || price <= 0 || price > 99999999.99) {
@@ -126,7 +132,7 @@ export async function POST(request: NextRequest) {
     const plan = await prisma.subscriptionPlan.create({
       data: {
         groupId: Number(group_id),
-        name,
+        name: name.trim(),
         description: description ?? null,
         price,
         originalPrice: original_price ?? null,

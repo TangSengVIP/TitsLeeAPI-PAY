@@ -26,6 +26,7 @@ export default function PayPageLayout({
 
   return (
     <div
+      data-theme={isDark ? 'dark' : 'light'}
       className={[
         'relative w-full overflow-hidden',
         isEmbedded ? 'min-h-screen p-2' : 'min-h-screen p-3 sm:p-4',
