@@ -193,7 +193,7 @@ describe('Payment Flow - PC/Mobile, QR/Redirect', () => {
       ).toBe(true);
     });
 
-    it('EasyPay does not use isMobile flag itself (delegates to frontend)', async () => {
+    it('EasyPay forwards isMobile to client for device=jump on mobile', async () => {
       mockEasyPayCreatePayment.mockResolvedValue({
         code: 1,
         trade_no: 'EP-003',
@@ -212,16 +212,14 @@ describe('Payment Flow - PC/Mobile, QR/Redirect', () => {
 
       await provider.createPayment(request);
 
-      // EasyPay client is called the same way regardless of isMobile
+      // EasyPay client receives isMobile so it can set device=jump
       expect(mockEasyPayCreatePayment).toHaveBeenCalledWith(
         expect.objectContaining({
           outTradeNo: 'order-ep-003',
           paymentType: 'alipay',
+          isMobile: true,
         }),
       );
-      // No isMobile parameter forwarded to the underlying client
-      const callArgs = mockEasyPayCreatePayment.mock.calls[0][0];
-      expect(callArgs).not.toHaveProperty('isMobile');
     });
   });
 

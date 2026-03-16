@@ -9,6 +9,7 @@ export interface CreatePaymentOptions {
   clientIp: string;
   productName: string;
   returnUrl?: string;
+  isMobile?: boolean;
 }
 
 function normalizeCidList(cid?: string): string | undefined {
@@ -66,6 +67,10 @@ export async function createPayment(opts: CreatePaymentOptions): Promise<EasyPay
   const cid = resolveCid(opts.paymentType);
   if (cid) {
     params.cid = cid;
+  }
+
+  if (opts.isMobile) {
+    params.device = 'jump';
   }
 
   const sign = generateSign(params, env.EASY_PAY_PKEY);

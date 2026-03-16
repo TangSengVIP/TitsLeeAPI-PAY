@@ -29,6 +29,7 @@ export class EasyPayProvider implements PaymentProvider {
       clientIp: request.clientIp || '127.0.0.1',
       productName: request.subject,
       returnUrl: request.returnUrl,
+      isMobile: request.isMobile,
     });
 
     return {
