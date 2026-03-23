@@ -493,6 +493,7 @@ function PayContent() {
   // R7: 检查是否所有入口都关闭（无可用充值方式 且 无订阅套餐）
   const allEntriesClosed = channelsLoaded && userLoaded && !canTopUp && !hasPlans;
   const showMainTabs = channelsLoaded && userLoaded && !allEntriesClosed && (hasChannels || hasPlans);
+  const effectiveTab = !canTopUp ? 'subscribe' : !hasPlans ? 'topup' : mainTab;
   const pageTitle = showMainTabs
     ? pickLocaleText(locale, '选择适合你的 充值/订阅服务', 'Choose Your Recharge / Subscription')
     : pickLocaleText(locale, 'Sub2API 余额充值', 'Sub2API Balance Recharge');
@@ -667,7 +668,7 @@ function PayContent() {
             !showTopUpForm && (
               <>
                 <MainTabs
-                  activeTab={!canTopUp ? 'subscribe' : mainTab}
+                  activeTab={effectiveTab}
                   onTabChange={setMainTab}
                   showSubscribeTab={hasPlans}
                   showTopUpTab={canTopUp}
@@ -675,7 +676,7 @@ function PayContent() {
                   locale={locale}
                 />
 
-                {mainTab === 'topup' && canTopUp && (
+                {effectiveTab === 'topup' && canTopUp && (
                   <div className="mt-6">
                     {/* 按量付费说明 banner */}
                     <div
@@ -794,7 +795,7 @@ function PayContent() {
                   </div>
                 )}
 
-                {mainTab === 'subscribe' && (
+                {effectiveTab === 'subscribe' && (
                   <div className="mt-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {plans.map((plan) => (
