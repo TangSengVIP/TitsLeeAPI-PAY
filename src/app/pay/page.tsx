@@ -496,7 +496,7 @@ function PayContent() {
   const effectiveTab = !canTopUp ? 'subscribe' : !hasPlans ? 'topup' : mainTab;
   const pageTitle = showMainTabs
     ? pickLocaleText(locale, '选择适合你的 充值/订阅服务', 'Choose Your Recharge / Subscription')
-    : pickLocaleText(locale, 'Sub2API 余额充值', 'Sub2API Balance Recharge');
+    : pickLocaleText(locale, '余额充值', 'Balance Recharge');
   const pageSubtitle = showMainTabs
     ? pickLocaleText(locale, '充值余额或者订阅套餐', 'Top up balance or subscribe to a plan')
     : pickLocaleText(locale, '安全支付，自动到账', 'Secure payment, automatic crediting');
@@ -960,6 +960,13 @@ function PayContent() {
                         </li>
                         <li>
                           {pickLocaleText(locale, '如需历史记录请查看「我的订单」', 'Check "My Orders" for history')}
+                        </li>
+                        <li>
+                          {pickLocaleText(
+                            locale,
+                            '支付时会收取通道手续费，此费用为支付通道收取，请您理解。',
+                            'Channel fees apply during payment; charged by the payment provider.'
+                          )}
                         </li>
                         {config.maxDailyAmount > 0 && (
                           <li>

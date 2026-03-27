@@ -1,21 +1,24 @@
-# docker-compose.hub.yml
-# 使用 Docker Hub 镜像部署（含自带 PostgreSQL）
-# 适合：全新服务器，无现有数据库
-#
-# 启动：IMAGE_TAG=1.0.0 docker compose -f docker-compose.hub.yml up -d
-# 更新：IMAGE_TAG=1.1.0 docker compose -f docker-compose.hub.yml pull && docker compose -f docker-compose.hub.yml up -d
-# 不指定 IMAGE_TAG 时默认使用 latest
+# docker-compose.local.yml
+# 从本地源码构建部署（适用于自定义修改后自行构建）
+# 启动：docker-compose -f docker-compose.local.yml up -d --build
+# 更新：cd /opt/sub2apipay && git pull && docker-compose -f docker-compose.local.yml up -d --build
 
 services:
   app:
-    image: touwaeriol/sub2apipay:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - '${APP_PORT:-3001}:3000'
     env_file: .env
+    environment:
+      - DATABASE_URL=postgresql://sub2apipay:${DB_PASSWORD:-password}@db:5432/sub2apipay
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
+    volumes:
+      - ./uploads:/app/public/uploads:ro
 
   db:
     image: postgres:16-alpine
