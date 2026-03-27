@@ -45,7 +45,7 @@ export function middleware(request: NextRequest) {
 
   // ── Content-Security-Policy: frame ancestors (clickjacking) ─────────────
   // Allow sub2api to embed this page in an iframe.
-  const sub2apiOrigin = extractOrigin(process.env.SUB2API_BASE_URL);
+  const sub2apiOrigin = extractOrigin(process.env.SUB2API_BASE_URL ?? '');
   const extraOrigins = parseOrigins(process.env.IFRAME_ALLOW_ORIGINS || '');
   const allowedFrameAncestors = buildFrameAncestors(sub2apiOrigin, extraOrigins);
 
